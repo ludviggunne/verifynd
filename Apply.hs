@@ -2,7 +2,7 @@ module Apply where
 
 import Formula (Formula)
 import qualified Formula as F (Formula (..))
-import Proof (Proof)
+import Proof (Proof, lastLine)
 import qualified Proof as P (Entry (..), ref)
 import Rule (Inputs (..), Rule (..))
 import qualified Rule as R (Input (..), Inputs (..), Kind (..), Rule (..))
@@ -67,5 +67,23 @@ apply (Rule R.NotElim (Inputs [yesRef, noRef])) proof =
           then Right F.Con
           else invalidInputs $ Inputs [yesRef, noRef]
       _ -> invalidInputs $ Inputs [yesRef, noRef]
+apply (Rule R.ImplIntr (Inputs [ref])) proof =
+  do
+    box <- P.ref proof ref
+    case box of
+      (P.Box (head : tail)) -> Right $ F.Binop T.Impl lhs rhs
+        where
+          (P.Line _ lhs) = head
+          (_, rhs) = lastLine tail
+apply (Rule R.ImplElim (Inputs [lhsRef, implRef])) proof =
+  do
+    lhs <- P.ref proof lhsRef
+    impl <- P.ref proof implRef
+    case (lhs, impl) of
+      (P.Line _ lhs, P.Line _ (F.Binop T.Impl implLhs implRhs)) ->
+        if lhs == implLhs
+          then Right implRhs
+          else invalidInputs $ Inputs [lhsRef, implRef]
+      _ -> invalidInputs $ Inputs [lhsRef, implRef]
 apply (Rule _ inputs) proof =
   invalidInputs inputs

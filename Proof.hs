@@ -12,13 +12,19 @@ data Entry
 
 type Proof = [Entry]
 
-invalidReference :: Either String t
-invalidReference = Left "Invalid reference"
+invalidReference :: String -> Either String t
+invalidReference descr = Left $ "Invalid reference: " ++ descr
 
 proofLength :: Proof -> Int
 proofLength [] = 0
 proofLength ((Line _ _) : tail) = 1 + proofLength tail
 proofLength ((Box subproof) : tail) = proofLength subproof + proofLength tail
+
+proofInsert :: Proof -> Int -> Entry -> Proof
+proofInsert [] 0 entry = [entry]
+proofInsert [last] 0 entry = last : [entry]
+proofInsert [Box subproof] n entry = [Box (proofInsert subproof (n - 1) entry)]
+proofInsert (head : tail) n entry = head : proofInsert tail n entry
 
 lastLine :: Proof -> (Command, Formula)
 lastLine [Box subproof] = lastLine subproof
@@ -31,18 +37,23 @@ ref (head : tail) input = case input of
     if n == 1
       then case head of
         Line _ _ -> Right head
-        _ -> invalidReference
+        Box subproof -> ref subproof input
       else case head of
         Line _ _ -> ref tail $ R.Line (n - 1)
-        _ -> invalidReference
+        Box subproof ->
+          if n <= len
+            then ref subproof input
+            else ref tail (R.Line (n - len))
+          where
+            len = proofLength subproof
   R.Box start end ->
     if start == 1
       then case head of
-        Line _ _ -> invalidReference
+        Line _ _ -> invalidReference "Not a box"
         Box subproof ->
           if proofLength subproof == end
             then Right head
-            else invalidReference
+            else invalidReference "?"
       else case head of
         Line _ _ -> ref tail $ R.Box (start - 1) (end - 1)
         Box subproof ->
