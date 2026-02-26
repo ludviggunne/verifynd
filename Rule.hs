@@ -17,6 +17,12 @@ instance Show Input where
   show (Box from to) = show from ++ "-" ++ show to
   show (Formula formula) = show formula
 
+newtype Inputs = Inputs [Input] deriving (Eq)
+
+instance Show Inputs where
+  show (Inputs [single]) = show single
+  show (Inputs (head : tail)) = show head ++ ", " ++ show (Inputs tail)
+
 data Kind
   = AndIntr
   | AndElim1
@@ -44,18 +50,21 @@ instance Show Kind where
   show NotIntr = "-i"
   show NotElim = "-e"
 
-type Rule = (Kind, [Input])
+data Rule = Rule Kind Inputs deriving (Eq)
+
+instance Show Rule where
+  show (Rule kind inputs) = show kind ++ " " ++ show inputs
 
 inputStr :: [Input] -> String
 inputStr [single] = show single
 inputStr (head : tail) = show head ++ ", " ++ inputStr tail
 
-ruleStr :: Rule -> String
-ruleStr (kind, inputs) = (show kind) ++ " " ++ inputStr inputs
-
 parse :: [Token] -> Either String Rule
 parse (kindTok : inputToks) =
-  (,) <$> parseKind kindTok <*> parseInputs inputToks
+  do
+    kind <- parseKind kindTok
+    inputs <- parseInputs inputToks
+    Right $ Rule kind $ Inputs inputs
 
 parseKind :: Token -> Either String Kind
 parseKind T.AndIntr = Right AndIntr

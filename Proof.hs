@@ -20,6 +20,11 @@ proofLength [] = 0
 proofLength ((Line _ _) : tail) = 1 + proofLength tail
 proofLength ((Box subproof) : tail) = proofLength subproof + proofLength tail
 
+lastLine :: Proof -> (Command, Formula)
+lastLine [Box subproof] = lastLine subproof
+lastLine [Line command formula] = (command, formula)
+lastLine (_ : tail) = lastLine tail
+
 ref :: Proof -> Input -> Either String Entry
 ref (head : tail) input = case input of
   R.Line n ->
