@@ -1,0 +1,11 @@
+;
+
+1. p->t 	; premise
+2. q->t 	; premise
+3. p | q 	; premise
+4. | p		; assumption
+5. | t		; ->e 1, 4
+6. noop		; premise ; TODO: how to delimit consecutive boxes????
+7. | q		; assumption
+8. | t		; ->e 2, 7
+9. t		; |e 4-5, 7-8, 3

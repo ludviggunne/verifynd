@@ -1,0 +1,4 @@
+; error: inconsistent line numbering
+
+1. p ; premise
+3. q ; premise

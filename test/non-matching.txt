@@ -1,0 +1,9 @@
+; error: line 7, in application of rule ->i: t does not match r
+
+1. p -> q 	; premise
+2. q -> r 	; premise
+3. r -> t 	; premise
+4. | p    	; assumption
+5. | q    	; ->e 1, 4
+6. | r    	; ->e 2, 5
+7. p -> t 	; ->i 4-6

@@ -1,0 +1,43 @@
+#! /usr/bin/env bash
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+verifynd() {
+	"$PWD"/../verifynd
+}
+
+run () {
+	local file="$(basename "$1")"
+
+	local expected
+	read -r expected
+	expected="${expected##;}"
+	expected="${expected## }"
+	expected="${expected%% }"
+
+	local actual
+	read -r actual < <(cat | verifynd)
+	actual="${actual## }"
+	actual="${actual%% }"
+
+	if [[ "$expected" != "$actual" ]]; then
+		>&2 echo -e "$file: \e[31mFAIL\e[0m"
+		>&2 echo -e "\texpected: '$expected'"
+		>&2 echo -e "\tactual: '$actual'"
+		return 1
+	else
+		>&2 echo -e "$file: \e[32mOK\e[0m"
+	fi
+
+	return 0
+}
+
+status=ok
+
+for file in "$PWD"/*.txt; do
+	run "$file" <"$file" | status=fail
+done
+
+[ ! "$status" = ok ] && exit 1
+
+exit 0
