@@ -31,6 +31,7 @@ data TagT
   | OrET
   | NotIT
   | NotET
+  | ConET
   | -- Formulas
     ImplT
   | AndT
@@ -69,6 +70,7 @@ scanT n ('|' : '|' : 'i' : '2' : tl) = ((n, OrI2T) :) <$> scanI (n + 4) tl
 scanT n ('|' : '|' : 'e' : tl) = ((n, OrET) :) <$> scanI (n + 3) tl
 scanT n ('~' : 'i' : tl) = ((n, NotIT) :) <$> scanI (n + 2) tl
 scanT n ('~' : 'e' : tl) = ((n, NotET) :) <$> scanI (n + 2) tl
+scanT n ('_' : '|' : '_' : 'e' : tl) = ((n, ConET) :) <$> scanI (n + 4) tl
 scanT n ('-' : '>' : tl) = ((n, ImplT) :) <$> scanI (n + 2) tl
 scanT n ('&' : '&' : tl) = ((n, AndT) :) <$> scanI (n + 2) tl
 scanT n ('|' : '|' : tl) = ((n, OrT) :) <$> scanI (n + 2) tl
@@ -124,6 +126,7 @@ instance Show TagT where
   show OrET = "'||e'"
   show NotIT = "'~i'"
   show NotET = "'~e'"
+  show ConET = "'_|_e'"
   show ImplT = "'->'"
   show AndT = "'&&'"
   show OrT = "'||'"

@@ -37,6 +37,7 @@ expectR (t@(_, OrI2T) : tl) = return (t, tl)
 expectR (t@(_, OrET) : tl) = return (t, tl)
 expectR (t@(_, NotIT) : tl) = return (t, tl)
 expectR (t@(_, NotET) : tl) = return (t, tl)
+expectR (t@(_, ConET) : tl) = return (t, tl)
 expectR ((n, t) : _) =
   Error (n, "unexpected " ++ show t ++ ", expected rule")
 

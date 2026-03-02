@@ -148,5 +148,9 @@ verifyL p n (LineP _ _ f (l, NotET) rs) = do
   h <- refL p s n
   f <~ conF
   h <~ notF g
+verifyL p n (LineP _ _ f (l, ConET) rs) = do
+  r <- getR rs 0 1 l
+  g <- refL p r n
+  g <~ conF
 verifyL _ _ (LineP _ _ _ (l, t) _) =
   Error (l, "Rule not implemented: " ++ show t)

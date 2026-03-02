@@ -60,3 +60,7 @@
 37.	a.			premise;
 38.	~a.			premise;
 39.	_|_.		~e 37, 38;
+
+// Contradiction-elimination
+40.	_|_.		premise;
+41.	a.			_|_e 40;
