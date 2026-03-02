@@ -36,10 +36,9 @@ verifyRn p f n r rs =
     verifyR p f n r rs
 
 verifyR :: Proof -> Formula -> Int -> Rule -> [Reference] -> Result ()
-verifyR p (Impl a b) n ImplIntr [BoxRef r] = do
-  (a', b') <- refBox p r n
-  a ~= a'
-  b ~= b'
+verifyR p f n ImplIntr [BoxRef r] = do
+  (a, b) <- refBox p r n
+  f ~= Impl a b
 verifyR p f n ImplElim [LineRef r1, LineRef r2] = do
   f1 <- ref p r1 n
   f2 <- ref p r2 n

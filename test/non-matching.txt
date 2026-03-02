@@ -1,4 +1,4 @@
-; error: line 7, in application of rule ->i: t does not match r
+; error: line 7, in application of rule ->i: p → t does not match p → r
 
 1. p -> q 	; premise
 2. q -> r 	; premise
