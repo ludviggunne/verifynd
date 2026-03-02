@@ -5,9 +5,9 @@
 2	b || !b		LEM;
 
 // Proof by contradiction
-3	!a -> _|_	premise;
+3	!a -> ?		premise;
 {	4	!a		assumption;
-	5	_|_		->e 3, 4; }
+	5	?		->e 3, 4; }
 6	a			PBC 4-5;
 
 // Copy
@@ -51,19 +51,19 @@
 32	c			||e 28-29, 30-31, 27;
 
 // Not-introduction
-33	a -> _|_	premise;
+33	a -> ?		premise;
 {	34	a		assumption;
-	35	_|_		->e 33, 34; }
+	35	?		->e 33, 34; }
 36	!a			!i 34-35;
 
 // Not-elimination
 37	a			premise;
 38	!a			premise;
-39	_|_			!e 37, 38;
+39	?			!e 37, 38;
 
 // Contradiction-elimination
-40	_|_			premise;
-41	a			_|_e 40;
+40	?			premise;
+41	a			?e 40;
 
 // Not-not-elimination
 42	!!a			premise;
