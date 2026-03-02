@@ -13,7 +13,6 @@ data TagT
   | LParT
   | RParT
   | SemiT
-  | PeriodT
   | CommaT
   | HyphenT
   | -- Rules
@@ -60,7 +59,6 @@ scanT n ('}' : tl) = ((n, RBraceT) :) <$> scanI (n + 1) tl
 scanT n ('(' : tl) = ((n, LParT) :) <$> scanI (n + 1) tl
 scanT n (')' : tl) = ((n, RParT) :) <$> scanI (n + 1) tl
 scanT n (';' : tl) = ((n, SemiT) :) <$> scanI (n + 1) tl
-scanT n ('.' : tl) = ((n, PeriodT) :) <$> scanI (n + 1) tl
 scanT n (',' : tl) = ((n, CommaT) :) <$> scanI (n + 1) tl
 scanT n ('-' : '>' : 'i' : tl) = ((n, ImplIT) :) <$> scanI (n + 3) tl
 scanT n ('-' : '>' : 'e' : tl) = ((n, ImplET) :) <$> scanI (n + 3) tl
@@ -111,7 +109,6 @@ instance Show TagT where
   show LParT = "'('"
   show RParT = "')'"
   show SemiT = "';'"
-  show PeriodT = "'.'"
   show CommaT = "','"
   show HyphenT = "'-'"
   show PremT = "'premise'"

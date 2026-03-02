@@ -68,9 +68,7 @@ parseE ((n, LBraceT) : tl) = do
   return (BoxP t p, ts)
 parseE ts = do
   (v, n, ts) <- expectN ts
-  (_, ts) <- expectT ts PeriodT
   (f, ts) <- parseF ts
-  (_, ts) <- expectT ts PeriodT
   (r, ts) <- expectR ts
   (rs, ts) <- parseR ts
   (_, ts) <- expectT ts SemiT
