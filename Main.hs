@@ -3,6 +3,7 @@ module Main where
 import Parse (parse)
 import Proof (PEntry)
 import Result
+import System.Exit (exitFailure, exitSuccess)
 import Text.Printf
 import Token
 import Verify (verify)
@@ -70,5 +71,7 @@ main :: IO ()
 main = do
   src <- getContents
   case parseAndVerify src of
-    Error e -> printErrors src e
-    _ -> return ()
+    Error e -> do
+      printErrors src e
+      exitFailure
+    _ -> exitSuccess
