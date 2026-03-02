@@ -64,3 +64,7 @@
 // Contradiction-elimination
 40.	_|_.		premise;
 41.	a.			_|_e 40;
+
+// Not-not-elimination
+42.	~~a.		premise;
+43.	a.			~~e 42;
