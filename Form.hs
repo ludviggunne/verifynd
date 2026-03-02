@@ -31,7 +31,6 @@ instance Show TagF where
   show (ImplF l r) = atomize l ++ " -> " ++ atomize r
   show (AndF l r) = atomize l ++ " && " ++ atomize r
   show (OrF l r) = atomize l ++ " || " ++ atomize r
-  show (NotF (_, NotF f)) = atomize f
   show (NotF f) = "~" ++ atomize f
   show ConF = "_|_"
   show HoleF = "_"
