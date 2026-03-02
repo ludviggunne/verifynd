@@ -2,8 +2,9 @@ module Token where
 
 import Data.Char (isAlpha, isDigit, isSpace)
 import Result
+import Types
 
-type Tok = (Int, TagT)
+type Tok = (Loc, TagT)
 
 data TagT
   = -- Single characters
@@ -46,13 +47,13 @@ data TagT
 scan :: String -> Result [Tok]
 scan = scanI 1
 
-scanI :: Int -> String -> Result [Tok]
+scanI :: Loc -> String -> Result [Tok]
 scanI n (' ' : tl) = scanI (n + 1) tl
 scanI n ('\t' : tl) = scanI (n + 1) tl
 scanI n ('\n' : tl) = scanI (n + 1) tl
 scanI n s = scanT n s
 
-scanT :: Int -> String -> Result [Tok]
+scanT :: Loc -> String -> Result [Tok]
 scanT n ('/' : '/' : tl) = scanC (n + 2) tl
 scanT n ('{' : tl) = ((n, LBraceT) :) <$> scanI (n + 1) tl
 scanT n ('}' : tl) = ((n, RBraceT) :) <$> scanI (n + 1) tl
@@ -85,12 +86,12 @@ scanT n s@(h : _)
   | otherwise = Error [(n, "unexpected character: " ++ [h])]
 scanT n "" = return []
 
-scanC :: Int -> String -> Result [Tok]
+scanC :: Loc -> String -> Result [Tok]
 scanC _ "" = return []
 scanC n ('\n' : tl) = scanI (n + 1) tl
 scanC n (_ : tl) = scanC (n + 1) tl
 
-scanS :: Int -> String -> Result [Tok]
+scanS :: Loc -> String -> Result [Tok]
 scanS n s = case span isAlpha s of
   ("premise", s') -> ((n, PremT) :) <$> scanI (n + length "premise") s'
   ("assumption", s') -> ((n, AssumT) :) <$> scanI (n + length "assumption") s'
@@ -99,7 +100,7 @@ scanS n s = case span isAlpha s of
   ("copy", s') -> ((n, CopyT) :) <$> scanI (n + length "copy") s'
   (v, s') -> ((n, VarT v) :) <$> scanI (n + length v) s'
 
-scanN :: Int -> String -> Result [Tok]
+scanN :: Loc -> String -> Result [Tok]
 scanN n s = case reads s of
   [(i, s')] -> ((n, NumT i) :) <$> scanI (n + length (show i)) s'
   _ -> Error [(n, "invalid number")]

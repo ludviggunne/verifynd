@@ -1,8 +1,10 @@
 module Result where
 
+import Types
+
 data Result t
   = Ok t
-  | Error [(Int, String)]
+  | Error [(Loc, String)]
   deriving (Eq)
 
 instance Functor Result where
@@ -23,6 +25,6 @@ instance Monad Result where
   (>>=) (Error e) _ = Error e
 
 -- Adds more context to errors
-(</) :: Result t -> (Int, String) -> Result t
+(</) :: Result t -> (Loc, String) -> Result t
 (</) r@(Ok _) _ = r
 (</) (Error e) c = Error (e ++ [c])

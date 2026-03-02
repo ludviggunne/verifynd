@@ -3,9 +3,10 @@ module Form where
 import Control.Monad (void)
 import Result
 import Token (Tok)
+import Types
 
 -- Operator source offset, tag
-type Form = (Int, TagF)
+type Form = (Loc, TagF)
 
 data TagF
   = ImplF Form Form

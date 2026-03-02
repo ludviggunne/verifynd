@@ -4,6 +4,7 @@ import Form (Form, TagF (..), (<<~), (<~))
 import Proof (PEntry (..), PRef (..), getL, numlP, refB, refL)
 import Result
 import Token (TagT (..))
+import Types
 
 verify :: [PEntry] -> Result ()
 verify p = do
@@ -12,7 +13,7 @@ verify p = do
 
 -- Verify that line numbers are consecutive
 -- and that only previous lines are referenced
-verifyN :: Int -> [PEntry] -> Result Int
+verifyN :: LineNo -> [PEntry] -> Result Int
 verifyN _ [] = return 0
 verifyN n ((BoxP _ p) : tl) = do
   d <- verifyN n p
@@ -24,7 +25,7 @@ verifyN n ((LineP (l, _) n' _ _ rs) : tl) = do
       verifyR n' rs
       (1 +) <$> verifyN (n + 1) tl
   where
-    verifyR :: Int -> [PRef] -> Result ()
+    verifyR :: LineNo -> [PRef] -> Result ()
     verifyR _ [] = return ()
     verifyR n ((LineR l n') : tl)
       | n == n' = Error [(l, "Reference to the same line")]
@@ -37,7 +38,7 @@ verifyN n ((LineP (l, _) n' _ _ rs) : tl) = do
       | otherwise = verifyR n tl
 
 -- Verify all applications in proof
-verifyP :: [PEntry] -> Int -> Int -> Result ()
+verifyP :: [PEntry] -> LineNo -> Int -> Result ()
 verifyP p n m
   | n > m =
       return ()
@@ -63,7 +64,7 @@ conF = (0, ConF)
 holeF :: Form
 holeF = (0, HoleF)
 
-getR :: [PRef] -> Int -> Int -> Int -> Result PRef
+getR :: [PRef] -> Int -> Int -> Loc -> Result PRef
 getR rs i m l
   | m > length rs =
       Error [(l, "Not enough references")]
@@ -72,7 +73,7 @@ getR rs i m l
   | otherwise = return (rs !! i)
 
 -- Verify line
-verifyL :: [PEntry] -> Int -> PEntry -> Result ()
+verifyL :: [PEntry] -> LineNo -> PEntry -> Result ()
 verifyL p n (LineP _ _ f (_, PremT) _) =
   return ()
 verifyL p n (LineP _ _ f (_, AssumT) _) =

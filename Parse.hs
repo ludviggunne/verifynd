@@ -4,6 +4,7 @@ import Form (Form, TagF (..))
 import Proof (PEntry (..), PRef (..))
 import Result
 import Token (TagT (..), Tok)
+import Types
 
 expectT :: [Tok] -> TagT -> Result (Tok, [Tok])
 expectT (tok@(n, t) : tl) t'
