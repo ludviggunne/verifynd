@@ -9,17 +9,17 @@ expectT :: [Tok] -> TagT -> Result (Tok, [Tok])
 expectT (tok@(n, t) : tl) t'
   | t == t' = return (tok, tl)
   | otherwise =
-      Error (n, "unexpected " ++ show t ++ ", expected " ++ show t')
+      Error [(n, "Unexpected " ++ show t ++ ", expected " ++ show t')]
 expectT [] t =
-  Error (-1, "unexpected end of input, expected " ++ show t)
+  Error [(-1, "Unexpected end of input, expected " ++ show t)]
 
 expectN :: [Tok] -> Result (Int, Tok, [Tok])
 expectN (t@(n, NumT v) : tl) =
   return (v, t, tl)
 expectN ((n, t) : tl) =
-  Error (n, "unexpected " ++ show t ++ ", expected number")
+  Error [(n, "Unexpected " ++ show t ++ ", expected number")]
 expectN [] =
-  Error (-1, "unexpected end of input, expected number")
+  Error [(-1, "Unexpected end of input, expected number")]
 
 expectR :: [Tok] -> Result (Tok, [Tok])
 expectR (t@(_, PremT) : tl) = return (t, tl)
@@ -39,14 +39,14 @@ expectR (t@(_, NotIT) : tl) = return (t, tl)
 expectR (t@(_, NotET) : tl) = return (t, tl)
 expectR (t@(_, ConET) : tl) = return (t, tl)
 expectR ((n, t) : _) =
-  Error (n, "unexpected " ++ show t ++ ", expected rule")
+  Error [(n, "Unexpected " ++ show t ++ ", expected rule")]
 
 parse :: [Tok] -> Result [PEntry]
 parse ts = do
   (p, ts) <- parseP ts
   case ts of
     [] -> return p
-    ((n, _) : _) -> Error (n, "unconsumed token at end of input")
+    ((n, _) : _) -> Error [(n, "Unconsumed token at end of input")]
 
 parseP :: [Tok] -> Result ([PEntry], [Tok])
 parseP [] =
@@ -62,7 +62,7 @@ parseP ts = do
 parseE :: [Tok] -> Result (PEntry, [Tok])
 parseE ((n, LBraceT) : tl) = do
   (p, ts) <- parseP tl
-  (t, ts) <- expectT ts RBraceT
+  (t, ts) <- expectT ts RBraceT </ (n, "This box is not closed")
   return (BoxP t p, ts)
 parseE ts = do
   (v, n, ts) <- expectN ts
@@ -92,7 +92,7 @@ parseF ts = do
 parseF' :: [Tok] -> Result (Form, [Tok])
 parseF' ((n, LParT) : tl) = do
   (f, ts) <- parseF tl
-  (_, ts) <- expectT ts RParT
+  (_, ts) <- expectT ts RParT </ (n, "This parenthesis is not closed")
   return (f, ts)
 parseF' ((n, VarT s) : tl) =
   return ((n, VarF s), tl)
@@ -102,7 +102,7 @@ parseF' ((_, NotT) : tl) = do
   (f@(n, _), ts) <- parseF' tl
   return ((n, NotF f), ts)
 parseF' ((n, t) : _) =
-  Error (n, "unexpected token " ++ show t ++ " in formula")
+  Error [(n, "Unexpected token " ++ show t ++ " in formula")]
 
 parseR :: [Tok] -> Result ([PRef], [Tok])
 parseR ts@((n, NumT _) : _) = do

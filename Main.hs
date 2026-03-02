@@ -41,15 +41,24 @@ pointer c l = error $ show c ++ " " ++ show l
 
 printError :: String -> (Int, String) -> IO ()
 printError s (i, m) = do
-  printf "line %d:\n" n
-  printf "%s\n" l
-  printf "\x1b[31m%s %s\x1b[0m\n" (pointer c l) m
+  -- printf "line %d:\n" n
+  printf "| %s\n" l
+  printf "| %s %s\n" (pointer c l) m
   where
     (n, c, l) = find s i'
     i' =
       if i < 0
         then length s - 1
         else i
+
+printErrors :: String -> [(Int, String)] -> IO ()
+printErrors _ [] = return ()
+printErrors s [h] = do
+  printError s h
+printErrors s (h : t) = do
+  printError s h
+  printf "\n"
+  printErrors s t
 
 parseAndVerify :: String -> Result ()
 parseAndVerify s = do
@@ -61,5 +70,5 @@ main :: IO ()
 main = do
   src <- getContents
   case parseAndVerify src of
-    Error e -> printError src e
+    Error e -> printErrors src e
     _ -> return ()

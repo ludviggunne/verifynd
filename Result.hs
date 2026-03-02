@@ -2,7 +2,7 @@ module Result where
 
 data Result t
   = Ok t
-  | Error (Int, String)
+  | Error [(Int, String)]
   deriving (Eq)
 
 instance Functor Result where
@@ -21,3 +21,8 @@ instance Monad Result where
   (>>=) :: Result a -> (a -> Result b) -> Result b
   (>>=) (Ok v) f = f v
   (>>=) (Error e) _ = Error e
+
+-- Adds more context to errors
+(</) :: Result t -> (Int, String) -> Result t
+(</) r@(Ok _) _ = r
+(</) (Error e) c = Error (e ++ [c])

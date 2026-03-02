@@ -38,7 +38,7 @@ instance Show TagF where
 
 matchF :: Form -> Form -> Result [Form]
 matchF f@(l, f') g@(_, g') = case impl f g of
-  Error _ -> Error (l, show f' ++ " does not match expected " ++ show g')
+  Error _ -> Error [(l, "'" ++ show f' ++ "' does not match expected '" ++ show g' ++ "'")]
   ok -> ok
   where
     impl :: Form -> Form -> Result [Form]
@@ -50,7 +50,7 @@ matchF f@(l, f') g@(_, g') = case impl f g of
       (++) <$> impl f f' <*> impl g g'
     impl (_, VarF v) (_, VarF v')
       | v == v' = Ok []
-      | otherwise = Error (0, "")
+      | otherwise = Error [(0, "")]
     impl (_, ConF) (_, ConF) =
       Ok []
     impl (_, NotF f) (_, NotF f') =
@@ -58,7 +58,7 @@ matchF f@(l, f') g@(_, g') = case impl f g of
     impl f (_, HoleF) =
       Ok [f]
     impl _ _ =
-      Error (0, "")
+      Error [(0, "")]
 
 (<<~) :: Form -> Form -> Result [Form]
 (<<~) = matchF

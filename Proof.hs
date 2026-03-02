@@ -47,9 +47,9 @@ getB l p = case (head p, last p) of
   (LineP _ _ f _ _, LineP _ _ g _ _) ->
     return (f, g)
   (BoxP {}, _) ->
-    Error (l, "First entry of this box is also a box")
+    Error [(l, "First entry of this box is also a box")]
   (_, BoxP {}) ->
-    Error (l, "Last entry of this box is also a box")
+    Error [(l, "Last entry of this box is also a box")]
 
 getL :: [PEntry] -> Int -> PEntry
 getL (l@(LineP _ n' _ _ _) : t) n
@@ -61,7 +61,7 @@ getL ((BoxP _ p) : t) n
 
 refB :: [PEntry] -> PRef -> Int -> Result (Form, Form)
 refB _ (LineR l _) _ =
-  Error (l, "Expected a box reference here")
+  Error [(l, "Expected a box reference here")]
 refB ((LineP {}) : t) r i =
   refB t r i
 refB ((BoxP _ p) : t) r@(BoxR l a b) i
@@ -69,13 +69,13 @@ refB ((BoxP _ p) : t) r@(BoxR l a b) i
   | not $ containsP p b = refB t r i
   | matchB p a b = getB l p
   | containsP p i = refB p r i
-  | otherwise = Error (l, "No reachable box matches this reference")
+  | otherwise = Error [(l, "No reachable box matches this reference")]
 refB [] (BoxR l _ _) _ =
-  Error (l, "No reachable box matches this reference")
+  Error [(l, "No reachable box matches this reference")]
 
 refL :: [PEntry] -> PRef -> Int -> Result Form
 refL _ (BoxR l _ _) _ =
-  Error (l, "Expected a line reference here")
+  Error [(l, "Expected a line reference here")]
 refL ((LineP _ l f _ _) : t) r@(LineR _ l') i
   | l == l' =
       return f
@@ -87,4 +87,4 @@ refL ((BoxP _ p) : t) r@(LineR _ i') i
   | otherwise =
       refL t r i
 refL [] (LineR l _) _ =
-  Error (l, "No reachable line matches this reference")
+  Error [(l, "No reachable line matches this reference")]

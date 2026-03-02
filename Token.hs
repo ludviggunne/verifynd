@@ -80,7 +80,7 @@ scanT n ('-' : tl) = ((n, HyphenT) :) <$> scanI (n + 1) tl
 scanT n s@(h : _)
   | isAlpha h = scanS n s
   | isDigit h = scanN n s
-  | otherwise = Error (n, "unexpected character: " ++ [h])
+  | otherwise = Error [(n, "unexpected character: " ++ [h])]
 scanT n "" = return []
 
 scanC :: Int -> String -> Result [Tok]
@@ -100,7 +100,7 @@ scanS n s = case span isAlpha s of
 scanN :: Int -> String -> Result [Tok]
 scanN n s = case reads s of
   [(i, s')] -> ((n, NumT i) :) <$> scanI (n + length (show i)) s'
-  _ -> Error (n, "invalid number")
+  _ -> Error [(n, "invalid number")]
 
 instance Show TagT where
   show LBraceT = "{"
