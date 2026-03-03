@@ -1,17 +1,17 @@
 PREFIX		:=	.
 GHC			:=	ghc
-GHCFLAGS	:=
-SOURCES		:= $(wildcard *.hs)
+GHCFLAGS	:= -isrc
+SOURCES		:= $(wildcard src/*.hs)
 
 verifynd: $(SOURCES)
-	$(GHC) $(GHCFLAGS) --make -o $(@) Main.hs
+	$(GHC) $(GHCFLAGS) --make -o $(@) src/Main.hs
 
 trace: GHCFLAGS	+= -prof -fprof-auto -rtsopts
 trace: verifynd
 	./$(<) +RTC -xc
 
 clean:
-	rm -rf verifynd *.hi *.o
+	rm -rf verifynd src/*.hi src/*.o
 
 install:
 	install -Dm755 verifynd $(PREFIX)/bin/verifynd
