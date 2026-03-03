@@ -44,9 +44,10 @@ data TagT
   deriving (Eq)
 
 scan :: String -> Result [Tok]
-scan = scanI 1
+scan = scanI 0
 
 scanI :: Loc -> String -> Result [Tok]
+-- Skip whitespace
 scanI n (' ' : tl) = scanI (n + 1) tl
 scanI n ('\t' : tl) = scanI (n + 1) tl
 scanI n ('\n' : tl) = scanI (n + 1) tl
@@ -84,6 +85,7 @@ scanT n s@(h : _)
   | otherwise = Error [(n, "Unexpected character: " ++ [h])]
 scanT n "" = return []
 
+-- Skip a comment
 scanC :: Loc -> String -> Result [Tok]
 scanC _ "" = return []
 scanC n ('\n' : tl) = scanI (n + 1) tl

@@ -6,6 +6,7 @@ import Result
 import Token (TagT (..), Tok)
 import Types
 
+-- Expect a specific token type
 expectT :: [Tok] -> TagT -> Result (Tok, [Tok])
 expectT (tok@(n, t) : tl) t'
   | t == t' = return (tok, tl)
@@ -14,6 +15,7 @@ expectT (tok@(n, t) : tl) t'
 expectT [] t =
   Error [(-1, "Unexpected end of input, expected " ++ show t)]
 
+-- Expect a number
 expectN :: [Tok] -> Result (Int, Tok, [Tok])
 expectN (t@(n, NumT v) : tl) =
   return (v, t, tl)
@@ -22,6 +24,7 @@ expectN ((n, t) : tl) =
 expectN [] =
   Error [(-1, "Unexpected end of input, expected number")]
 
+-- Expect a rule
 expectR :: [Tok] -> Result (Tok, [Tok])
 expectR (t@(_, PremT) : tl) = return (t, tl)
 expectR (t@(_, AssumT) : tl) = return (t, tl)
@@ -50,6 +53,7 @@ parse ts = do
     [] -> return p
     ((n, _) : _) -> Error [(n, "Unconsumed token at end of input")]
 
+-- Parse a (sub)proof
 parseP :: [Tok] -> Result ([PEntry], [Tok])
 parseP [] =
   return ([], [])
@@ -61,12 +65,13 @@ parseP ts = do
       (r, ts) <- parseP ts
       return (e : r, ts)
 
+-- Parse a proof entry
 parseE :: [Tok] -> Result (PEntry, [Tok])
 parseE ((n, LBraceT) : tl) = do
   (p, ts) <- parseP tl
   (t, ts) <- expectT ts RBraceT </ (n, "This box is not closed")
   return (BoxP t p, ts)
-parseE ts = do
+parseE ts@((n, _) : _) = do
   (v, n, ts) <- expectN ts
   (f, ts) <- parseF ts
   (r, ts) <- expectR ts
@@ -74,43 +79,55 @@ parseE ts = do
   (_, ts) <- expectT ts SemiT
   return (LineP n v f r rs, ts)
 
+-- Parse a formula
 parseF :: [Tok] -> Result (Form, [Tok])
 parseF ts = do
-  (l@(n, _), ts) <- parseF' ts
+  (l@(n, _), ts) <- parseA ts
   case ts of
+    -- Implication
     ((_, ImplT) : ts) -> do
-      (r, ts) <- parseF' ts
+      (r, ts) <- parseA ts
       return ((n, ImplF l r), ts)
+    -- And
     ((_, AndT) : ts) -> do
-      (r, ts) <- parseF' ts
+      (r, ts) <- parseA ts
       return ((n, AndF l r), ts)
+    -- Or
     ((_, OrT) : ts) -> do
-      (r, ts) <- parseF' ts
+      (r, ts) <- parseA ts
       return ((n, OrF l r), ts)
     _ -> return (l, ts)
 
-parseF' :: [Tok] -> Result (Form, [Tok])
-parseF' ((n, LParT) : tl) = do
+-- Parse an atom
+parseA :: [Tok] -> Result (Form, [Tok])
+-- Parenthesized formula
+parseA ((n, LParT) : tl) = do
   (f, ts) <- parseF tl
   (_, ts) <- expectT ts RParT </ (n, "This parenthesis is not closed")
   return (f, ts)
-parseF' ((n, VarT s) : tl) =
+-- Variable
+parseA ((n, VarT s) : tl) =
   return ((n, VarF s), tl)
-parseF' ((n, ConT) : tl) =
+-- Contradiction
+parseA ((n, ConT) : tl) =
   return ((n, ConF), tl)
-parseF' ((_, NotT) : tl) = do
-  (f@(n, _), ts) <- parseF' tl
+-- Negation
+parseA ((_, NotT) : tl) = do
+  (f@(n, _), ts) <- parseA tl
   return ((n, NotF f), ts)
-parseF' ((n, t) : _) =
+parseA ((n, t) : _) =
   Error [(n, "Unexpected token " ++ show t ++ " in formula")]
 
+-- Parse a reference list
 parseR :: [Tok] -> Result ([PRef], [Tok])
 parseR ts@((n, NumT _) : _) = do
   (xv, x, ts) <- expectN ts
   (r, ts) <- case ts of
+    -- Box reference
     ((_, HyphenT) : ts) -> do
       (yv, y, ts) <- expectN ts
       return (BoxR n xv yv, ts)
+    -- Line reference
     _ -> return (LineR n xv, ts)
   case ts of
     ((_, CommaT) : ts) -> do

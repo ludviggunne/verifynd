@@ -49,6 +49,7 @@ getB l p = case (head p, last p) of
   (_, BoxP {}) ->
     Error [(l, "Last entry of this box is also a box")]
 
+-- Get the specified line
 getL :: [PEntry] -> LineNo -> PEntry
 getL (l@(LineP _ n' _ _ _) : t) n
   | n == n' = l
@@ -57,20 +58,28 @@ getL ((BoxP _ p) : t) n
   | containsP p n = getL p n
   | otherwise = getL t n
 
+-- Verifies a reference to a box from a specific line number,
+-- and returns the first and last formulas
 refB :: [PEntry] -> PRef -> LineNo -> Result (Form, Form)
 refB _ (LineR l _) _ =
   Error [(l, "Expected a box reference here")]
 refB ((LineP {}) : t) r i =
   refB t r i
 refB ((BoxP _ p) : t) r@(BoxR l a b) i
+  -- If the box doesn't contain the range, skip it
   | not $ containsP p a = refB t r i
   | not $ containsP p b = refB t r i
+  -- If the range matches the box, we're done
   | matchB p a b = getB l p
+  -- If the line from which we reference is contained
+  -- in the box, we can recurse in to it
   | containsP p i = refB p r i
   | otherwise = Error [(l, "No reachable box matches this reference")]
 refB [] (BoxR l _ _) _ =
   Error [(l, "No reachable box matches this reference")]
 
+-- Verifies a reference to a line from as specific line number,
+-- and returns its formula
 refL :: [PEntry] -> PRef -> LineNo -> Result Form
 refL _ (BoxR l _ _) _ =
   Error [(l, "Expected a line reference here")]

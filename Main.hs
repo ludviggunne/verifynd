@@ -1,19 +1,14 @@
 module Main where
 
 import Parse (parse)
-import Proof (PEntry)
-import Result
+import Result (Result (..))
 import System.Exit (exitFailure, exitSuccess)
-import Text.Printf
-import Token
+import Text.Printf (printf)
+import Token (scan)
 import Verify (verify)
 
-loop :: [Tok] -> IO ()
-loop [] = return ()
-loop (hd : tl) = do
-  print hd
-  loop tl
-
+-- Associates each line with a line number and
+-- a bytes offset in the input string
 enum :: [String] -> [(Int, Int, String)]
 enum = impl 1 0
   where
@@ -22,6 +17,7 @@ enum = impl 1 0
     impl n c (hd : tl) =
       (n, c, hd) : impl (n + 1) (1 + c + length hd) tl
 
+-- Find which line a byte offset is contained in
 find :: String -> Int -> (Int, Int, String)
 find s = impl $ enum (lines s)
   where
@@ -32,17 +28,18 @@ find s = impl $ enum (lines s)
       | otherwise = (n, i - c, s)
     impl [(n, c, s)] i = (n, i - c, s)
 
+-- Point to a specific character on a line
 pointer :: Int -> String -> String
-pointer 1 _ = "^"
+pointer 0 _ = "^"
 pointer c ('\t' : tl) =
   "\t" ++ pointer (c - 1) tl
 pointer c (_ : tl) =
   " " ++ pointer (c - 1) tl
 pointer c l = error $ show c ++ " " ++ show l
 
-printError :: String -> (Int, String) -> IO ()
-printError s (i, m) = do
-  -- printf "line %d:\n" n
+-- Print an error with context
+printE :: String -> (Int, String) -> IO ()
+printE s (i, m) = do
   printf "| %s\n" l
   printf "| %s %s\n" (pointer c l) m
   where
@@ -52,14 +49,15 @@ printError s (i, m) = do
         then length s - 1
         else i
 
-printErrors :: String -> [(Int, String)] -> IO ()
-printErrors _ [] = return ()
-printErrors s [h] = do
-  printError s h
-printErrors s (h : t) = do
-  printError s h
+-- Print error list
+printEs :: String -> [(Int, String)] -> IO ()
+printEs _ [] = return ()
+printEs s [h] = do
+  printE s h
+printEs s (h : t) = do
+  printE s h
   printf "\n"
-  printErrors s t
+  printEs s t
 
 parseAndVerify :: String -> Result ()
 parseAndVerify s = do
@@ -72,6 +70,6 @@ main = do
   src <- getContents
   case parseAndVerify src of
     Error e -> do
-      printErrors src e
+      printEs src e
       exitFailure
     _ -> exitSuccess
