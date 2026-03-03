@@ -33,7 +33,7 @@ instance Show TagF where
   show (AndF l r) = atomize l ++ " && " ++ atomize r
   show (OrF l r) = atomize l ++ " || " ++ atomize r
   show (NotF f) = "!" ++ atomize f
-  show ConF = "_|_"
+  show ConF = "?"
   show HoleF = "_"
 
 matchF :: Form -> Form -> Result [Form]

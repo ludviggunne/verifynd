@@ -40,6 +40,7 @@ pointer c l = error $ show c ++ " " ++ show l
 -- Print an error with context
 printE :: String -> (Int, String) -> IO ()
 printE s (i, m) = do
+  printf "line %d:\n" n
   printf "| %s\n" l
   printf "| %s %s\n" (pointer c l) m
   where
@@ -56,7 +57,7 @@ printEs s [h] = do
   printE s h
 printEs s (h : t) = do
   printE s h
-  printf "\n"
+  -- printf "\n"
   printEs s t
 
 parseAndVerify :: String -> Result ()
