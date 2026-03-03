@@ -32,7 +32,7 @@ instance Show TagF where
   show (ImplF l r) = atomize l ++ " -> " ++ atomize r
   show (AndF l r) = atomize l ++ " && " ++ atomize r
   show (OrF l r) = atomize l ++ " || " ++ atomize r
-  show (NotF f) = "~" ++ atomize f
+  show (NotF f) = "!" ++ atomize f
   show ConF = "_|_"
   show HoleF = "_"
 
@@ -64,4 +64,4 @@ matchF f@(l, f') g@(_, g') = case impl f g of
 (<<~) = matchF
 
 (<~) :: Form -> Form -> Result ()
-(<~) f g = Control.Monad.void (matchF f g)
+(<~) f g = void $ matchF f g
