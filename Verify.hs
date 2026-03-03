@@ -66,10 +66,10 @@ holeF = (0, HoleF)
 
 getR :: [PRef] -> Int -> Int -> Loc -> Result PRef
 getR rs i m l
-  | m > length rs =
-      Error [(l, "Not enough references")]
-  | m < length rs =
-      Error [(l, "Too many references")]
+  | m /= length rs =
+      if m == 1
+        then Error [(l, "This rule requires 1 reference")]
+        else Error [(l, "This rule requires " ++ show m ++ " references")]
   | otherwise = return (rs !! i)
 
 -- Verify line
@@ -79,8 +79,8 @@ verifyL p n (LineP _ _ f (_, PremT) _) =
 verifyL p n (LineP _ _ f (_, AssumT) _) =
   return ()
 verifyL p n (LineP _ _ f (_, LemT) _) = do
-  fs <- f <<~ orF holeF (notF holeF)
-  head fs <~ (fs !! 1)
+  fs <- f <<~ orF holeF holeF
+  (fs !! 1) <~ notF (head fs)
   return ()
 verifyL p n (LineP _ _ f (l, PbcT) rs) = do
   r <- getR rs 0 1 l
