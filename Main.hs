@@ -1,5 +1,6 @@
 module Main where
 
+import Color
 import Parse (parse)
 import Result (Result (..))
 import System.Exit (exitFailure, exitSuccess)
@@ -38,11 +39,11 @@ pointer c (_ : tl) =
 pointer c l = error $ show c ++ " " ++ show l
 
 -- Print an error with context
-printE :: String -> (Int, String) -> IO ()
-printE s (i, m) = do
-  printf "line %d:\n" n
-  printf "| %s\n" l
-  printf "| %s %s\n" (pointer c l) m
+printE :: (String -> String) -> String -> (Int, String) -> IO ()
+printE col s (i, m) = do
+  printf (dim "line %d:\n") n
+  printf "%s %s\n" (dim "|") l
+  printf "%s %s %s\n" (dim "|") (col $ pointer c l) $ col m
   where
     (n, c, l) = find s i'
     i' =
@@ -51,14 +52,13 @@ printE s (i, m) = do
         else i
 
 -- Print error list
-printEs :: String -> [(Int, String)] -> IO ()
-printEs _ [] = return ()
-printEs s [h] = do
-  printE s h
-printEs s (h : t) = do
-  printE s h
-  -- printf "\n"
-  printEs s t
+printEs :: (String -> String) -> String -> [(Int, String)] -> IO ()
+printEs _ _ [] = return ()
+printEs c s [h] = do
+  printE c s h
+printEs c s (h : t) = do
+  printE c s h
+  printEs yellow s t
 
 parseAndVerify :: String -> Result ()
 parseAndVerify s = do
@@ -71,6 +71,6 @@ main = do
   src <- getContents
   case parseAndVerify src of
     Error e -> do
-      printEs src e
+      printEs red src e
       exitFailure
     _ -> exitSuccess

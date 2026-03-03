@@ -1,5 +1,6 @@
 module Form where
 
+import Color
 import Control.Monad (void)
 import Result
 import Token (Tok)
