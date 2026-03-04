@@ -3,8 +3,10 @@ module Main where
 import Color
 import Parse (parse)
 import Result (Result (..))
+import System.Environment (getArgs)
 import System.Exit (exitFailure, exitSuccess)
-import Text.Printf (printf)
+import System.IO
+import Text.Printf (hPrintf, printf)
 import Token (scan)
 import Verify (verify)
 
@@ -41,9 +43,9 @@ pointer c l = error $ show c ++ " " ++ show l
 -- Print an error with context
 printE :: (String -> String) -> String -> (Int, String) -> IO ()
 printE col s (i, m) = do
-  printf (dim "line %d:\n") n
-  printf "%s %s\n" (dim "|") l
-  printf "%s %s %s\n" (dim "|") (col $ pointer c l) $ col m
+  hPrintf stderr (dim "line %d:\n") n
+  hPrintf stderr "%s %s\n" (dim "|") l
+  hPrintf stderr "%s %s %s\n" (dim "|") (col $ pointer c l) $ col m
   where
     (n, c, l) = find s i'
     i' =
@@ -66,9 +68,17 @@ parseAndVerify s = do
   p <- parse ts
   verify p
 
+getInputHandle :: IO Handle
+getInputHandle = do
+  args <- getArgs
+  case args of
+    (path : _) -> openFile path ReadMode
+    _ -> return stdin
+
 main :: IO ()
 main = do
-  src <- getContents
+  handle <- getInputHandle
+  src <- hGetContents handle
   case parseAndVerify src of
     Error e -> do
       printEs red src e
