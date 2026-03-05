@@ -96,6 +96,14 @@ verifyL p n (LineP _ _ f (l, PbcT) rs) = do
   (g, h) <- refB p r n
   h <~ conF
   g <~ notF f
+verifyL p n (LineP _ _ f (l, MtT) rs) = do
+  r <- getR rs 0 2 l
+  s <- getR rs 1 2 l
+  g <- refL p r n
+  h <- refL p s n
+  fs <- g <<~ implF holeF holeF
+  f <~ notF (head fs)
+  h <~ notF (fs !! 1)
 -- Copy
 verifyL p n (LineP _ _ f (l, CopyT) rs) = do
   r <- getR rs 0 1 l

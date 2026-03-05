@@ -20,6 +20,7 @@ data TagT
   | AssumT
   | LemT
   | PbcT
+  | MtT
   | CopyT
   | ImplET
   | ImplIT
@@ -97,6 +98,7 @@ scanS n s = case span isAlpha s of
   ("assumption", s') -> ((n, AssumT) :) <$> scanI (n + length "assumption") s'
   ("PBC", s') -> ((n, PbcT) :) <$> scanI (n + length "PBC") s'
   ("LEM", s') -> ((n, LemT) :) <$> scanI (n + length "LEM") s'
+  ("MT", s') -> ((n, MtT) :) <$> scanI (n + length "MT") s'
   ("copy", s') -> ((n, CopyT) :) <$> scanI (n + length "copy") s'
   (v, s') -> ((n, VarT v) :) <$> scanI (n + length v) s'
 
@@ -117,6 +119,7 @@ instance Show TagT where
   show AssumT = "'assumption'"
   show LemT = "'LEM'"
   show PbcT = "'PBC'"
+  show MtT = "'MT'"
   show CopyT = "'copy'"
   show ImplET = "'->e'"
   show ImplIT = "'->i'"

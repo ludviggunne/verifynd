@@ -68,3 +68,8 @@
 // Not-not-elimination
 42	!!a			premise;
 43	a			!!e 42;
+
+// Modus tollens
+44	a -> b		premise;
+45	!b			premise;
+46	!a			MT 44, 45;

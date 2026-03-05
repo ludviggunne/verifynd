@@ -129,6 +129,7 @@ module.exports = grammar({
       'assumption',
       'LEM',
       'PBC',
+      'MT',
       'copy',
       '->e',
       '->i',
