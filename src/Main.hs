@@ -1,6 +1,7 @@
 module Main where
 
 import Color
+import Control.Monad (when)
 import Parse (parse)
 import Result (Result (..))
 import System.Environment (getArgs)
@@ -65,6 +66,7 @@ printEs c s (h : t) = do
 parseAndVerify :: String -> Result ()
 parseAndVerify s = do
   ts <- scan s
+  when (null ts) $ Error [(-1, "Empty proof")]
   p <- parse ts
   verify p
 
@@ -79,6 +81,12 @@ main :: IO ()
 main = do
   handle <- getInputHandle
   src <- hGetContents handle
+  when
+    (null src)
+    ( do
+        printf "Empty proof\n"
+        exitFailure
+    )
   case parseAndVerify src of
     Error e -> do
       printEs red src e

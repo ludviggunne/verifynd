@@ -1,5 +1,6 @@
 module Verify where
 
+import Control.Monad (unless, when)
 import Form (Form, TagF (..), (<<~), (<~))
 import Proof (PEntry (..), PRef (..), getL, numlP, refB, refL)
 import Result
@@ -8,8 +9,26 @@ import Types
 
 verify :: [PEntry] -> Result ()
 verify p = do
-  _ <- verifyN 0 p
+  verifyR p True True
+  verifyN 0 p
   verifyP p 1 (numlP p)
+
+-- Check that premises and assumptions are used correctly
+verifyR :: [PEntry] -> Bool -> Bool -> Result ()
+verifyR [] _ _ = Ok ()
+verifyR (h : t) top first = do
+  case h of
+    (LineP _ _ _ (l, PremT) _) -> do
+      unless top $ Error [(l, "Premises are not allowed in subproofs")]
+    (LineP _ _ _ (l, AssumT) _) -> do
+      when top $ Error [(l, "Assumptions are only allowed in subproofs")]
+      unless first $ Error [(l, "Assumptions may only appear on the first line of subproofs")]
+    (LineP _ _ _ (l, _) _) -> do
+      when (first && not top) $ Error [(l, "First line of subproof must be an assumption")]
+    (BoxP (l, _) p) -> do
+      when (length p < 2) $ Error [(l, "Subproofs must have at least two lines")]
+      verifyR p False True
+  verifyR t top False
 
 -- Verify that line numbers are consecutive
 -- and that only previous lines are referenced
@@ -19,11 +38,9 @@ verifyN n ((BoxP _ p) : tl) = do
   d <- verifyN n p
   (d +) <$> verifyN (n + d) tl
 verifyN n ((LineP (l, _) n' _ _ rs) : tl) = do
-  if n' /= n + 1
-    then Error [(l, "Inconsistent numbering (expected " ++ show (n + 1) ++ ")")]
-    else do
-      verifyR n' rs
-      (1 +) <$> verifyN (n + 1) tl
+  unless (n' == n + 1) $ Error [(l, "Inconsistent numbering (expected " ++ show (n + 1) ++ ")")]
+  verifyR n' rs
+  (1 +) <$> verifyN (n + 1) tl
   where
     verifyR :: LineNo -> [PRef] -> Result ()
     verifyR _ [] = return ()
