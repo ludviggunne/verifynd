@@ -1,0 +1,75 @@
+// Premises
+1	a			premise;
+
+// Law of excluded middle
+2	b || !b		LEM;
+
+// Proof by contradiction
+3	!a -> ?		premise;
+{	4	!a		assumption;
+	5	?		->e 3, 4; }
+6	a			PBC 4-5;
+
+// Copy
+7	a			premise;
+8	a			copy 7;
+
+// Implication-introduction
+9	b			premise;
+{	10	a		assumption;
+	11	b		copy 9; }
+12	a -> b		->i 10-11;
+
+// Implication-elimination
+13	a -> b		premise;
+14	a			premise;
+15	b			->e 13, 14;
+
+// And-introduction
+16	a			premise;
+17	b			premise;
+18	a && b		&&i 16, 17;
+
+// And-elimination
+19	a && b		premise;
+20	a			&&e1 19;
+21	b			&&e2 19;
+
+// Or-introduction
+22	a			premise;
+23	a || b		||i1 22;
+24	b || a		||i2 22;
+
+// Or-elimination
+25	a -> c		premise;
+26	b -> c		premise;
+27	a || b		premise;
+{	28	a		assumption;
+	29	c		->e 25, 28; }
+{	30	b		assumption;
+	31	c		->e 26, 30; }
+32	c			||e 28-29, 30-31, 27;
+
+// Not-introduction
+33	a -> ?		premise;
+{	34	a		assumption;
+	35	?		->e 33, 34; }
+36	!a			!i 34-35;
+
+// Not-elimination
+37	a			premise;
+38	!a			premise;
+39	?			!e 37, 38;
+
+// Contradiction-elimination
+40	?			premise;
+41	a			?e 40;
+
+// Not-not-elimination
+42	!!a			premise;
+43	a			!!e 42;
+
+// Modus tollens
+44	a -> b		premise;
+45	!b			premise;
+46	!a			MT 44, 45;
